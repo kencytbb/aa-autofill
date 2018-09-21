@@ -7,6 +7,7 @@
 // @match        https://test1-desk.finform.ch/*
 // @match        http://localhost:8081/ivy/*
 // @match        http://dev2-desk.axonivy.io/ivy/*
+// @match        https://desk.finform.ch/ivy/*
 // @require             https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js
 // @require             https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.0/underscore-min.js
 // @require             https://cdnjs.cloudflare.com/ajax/libs/chance/1.0.16/chance.min.js
@@ -56,9 +57,7 @@ var CONST = {
 var COB_DATA = {
     accountHolder1: {
         personalData: {
-            customSalutation: '1',
-            firstName: chance.first(),
-            lastName: chance.last(),
+            customSalutation: '1',            
             titleForSelectMenu: '1',
             nationality: 'CH',
             homeTown: 'Lucens',
@@ -117,9 +116,7 @@ const templates = {
         data: { display: '', icon: '' },
         get html() {
             return `
-            <div id="flyover-wrapper" class="flyover-wrapper flyover ${this.data.display}">
-                <a><span class="flyover-close">${this.data.icon}</span></a>
-                <div class="flyover-box"></div>
+            <div id="panel-wrapper" class="panel-wrapper panel ${this.data.display}">                                
             </div>
             `;
         }
@@ -128,23 +125,7 @@ const templates = {
 
 (function () {
     createPanel();
-    createButtons();
-   //$('footer').after('<button  class="btn-fill btn btn-primary " id="btnAh">AccountHolder</button>');
-    //$ ("#btnAh").after('<button  class="btn btn-primary btn-fill" id="btnAh2">AccountHolder 2</button>');    
-    $("#btnAh2").css({'top': '57vh'});
-    $("#btnProduct").css({'top': '60vh'});
-    $("#btnAh").click(function(event) {
-        event.preventDefault();
-        $.when(blockPage(), fullFillAcountholderTab(), fullFillSigningRightData()).done(function(){
-            unblockPage();
-        })
-       // blockPage();
-    });
-    $("#btnProduct").click(function(event){
-        event.preventDefault();
-        blockPage();
-        fullfillProductTab();
-    });
+    createButtons();   
 })();
 
 
@@ -152,41 +133,54 @@ const templates = {
 
 GM_addStyle(`
 .btn-fill {
-	
-    display: block !important;
+	-moz-box-shadow:inset 0px -3px 7px 0px #29bbff;
+	-webkit-box-shadow:inset 0px -3px 7px 0px #29bbff;
+	box-shadow:inset 0px -3px 7px 0px #29bbff;
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #2dabf9), color-stop(1, #0688fa));
+	background:-moz-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
+	background:-webkit-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
+	background:-o-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
+	background:-ms-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
+	background:linear-gradient(to bottom, #2dabf9 5%, #0688fa 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#2dabf9', endColorstr='#0688fa',GradientType=0);
+	background-color:#2dabf9;
+	-moz-border-radius:3px;
+	-webkit-border-radius:3px;
+	border-radius:3px;
+	border:1px solid #0b0e07;
+	display:inline-block;
 	cursor:pointer;
 	color:#ffffff;
 	font-family:Arial;
 	font-size:15px;
-	font-weight:bold;
-    padding:6px 24px;
-    bottom: 0vh;
-    width: 100px;
-    height: 35px;
-    line-height: 0px;    
+	padding:9px 23px;
 	text-decoration:none;
-    text-shadow:0px -1px 0px #5b6178;
-    float: right;
-    margin: 0px 10px 10px 10px;
+    text-shadow:0px 1px 0px #263666;
+    width:150px;    
 }
 .btn-fill:hover {
-	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #019ad2), color-stop(1, #33bdef));
-	background:-moz-linear-gradient(top, #019ad2 5%, #33bdef 100%);
-	background:-webkit-linear-gradient(top, #019ad2 5%, #33bdef 100%);
-	background:-o-linear-gradient(top, #019ad2 5%, #33bdef 100%);
-	background:-ms-linear-gradient(top, #019ad2 5%, #33bdef 100%);
-	background:linear-gradient(to bottom, #019ad2 5%, #33bdef 100%);
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#019ad2', endColorstr='#33bdef',GradientType=0);
-	background-color:#019ad2;
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #0688fa), color-stop(1, #2dabf9));
+	background:-moz-linear-gradient(top, #0688fa 5%, #2dabf9 100%);
+	background:-webkit-linear-gradient(top, #0688fa 5%, #2dabf9 100%);
+	background:-o-linear-gradient(top, #0688fa 5%, #2dabf9 100%);
+	background:-ms-linear-gradient(top, #0688fa 5%, #2dabf9 100%);
+	background:linear-gradient(to bottom, #0688fa 5%, #2dabf9 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#0688fa', endColorstr='#2dabf9',GradientType=0);
+	background-color:#0688fa;
 }
-.flyover-wrapper {
+.btn-fill:active {
+	position:relative;
+	top:1px;
+}
+
+.panel-wrapper {
     padding: 0px;
     font-weight: 500;
     -webkit-box-shadow: -1px 0px 11px -1px rgba(0,0,0,0.75);
     -moz-box-shadow: -1px 0px 11px -1px rgba(0,0,0,0.75);
     box-shadow: -1px 0px 11px -1px rgba(0,0,0,0.75);
 }
-.flyover {
+.panel {
     right: -650px;
     bottom: 0px;
     overflow: hidden;
@@ -200,9 +194,9 @@ GM_addStyle(`
     -ms-transition: all .6s ease;
     transition: all .6s ease;
 }
-.flyover.out {
-    right: -110px;
-    bottom: 0px;
+.panel.out {
+    right: 0px;
+    bottom: 10px;
 }
 `);
 
@@ -251,14 +245,14 @@ function createButtons() {
 function createButton(button) {        
     let template = templates.buttons[button.template || 'normal'];        
     template.data = button;    
-    $('footer').append(template.html);
+    $('.panel').append(template.html);
     $("#" + button.id).click(button.event);
 }
 
 function createPanel(){
     var panel = {
         'display' : 'out',
-        'icon' : '===='
+        'icon' : ''
     }
     let template = templates.panel;
     template.data = panel;
@@ -280,8 +274,7 @@ function onProductFillData(e){
 
 
 
-function fullFillAcountholderTab(){
-    console.log('aaa')
+function fullFillAcountholderTab(){    
     var accountHolder = COB_DATA.accountHolder1;
     _fillQuestionnaire(accountHolder);
     _fullfillPersonInformationSubTab(accountHolder);
@@ -314,8 +307,8 @@ function _fullfillPersonInformationSubTab(accountHolder) {
     let data = accountHolder.personalData;
 
     $(tabViewId + '[id$="personSalutation_input"]').val($($(tabViewId + '[id$="personSalutation_input"]').find('option')[data.customSalutation]).val()).trigger('change')
-    $(tabViewId + '[id$="personFirstName"]').val(data.firstName).trigger('change');
-    $(tabViewId + '[id$="personLastName"]').val(data.lastName).trigger('change');
+    $(tabViewId + '[id$="personFirstName"]').val(chance.first()).trigger('change');
+    $(tabViewId + '[id$="personLastName"]').val(chance.last()).trigger('change');
     $(tabViewId + '[id$="personNationality"]').val(data.nationality).trigger('change');
     $(tabViewId + '[id$="homeTown"]').val(data.homeTown).trigger('change');
     $(tabViewId + '[id$="personNationalityItemValue"]').val(data.nationalityItemValue);
@@ -331,8 +324,9 @@ function _fullfillPersonInformationSubTab(accountHolder) {
     $(tabViewId + '[id$="accountHolderIdentification:authority"]').val(data.authoriy).trigger('change');
     $(tabViewId + '[id$="accountHolderIdentification:dateOfIssue_input"]').val(data.dateOfIssue).trigger('change');
     $(tabViewId + '[id$="accountHolderIdentification:dateOfExpiry_input"]').val(data.dateOfExp).trigger('change');
+
     _checkElement('[id$="nokAddressReason_input"]').then((element) => {
-        var setSelectedValue = $($(tabViewId + '[id$="nokAddressReason_input"]').find('option')[data.nokReason]).val();
+        var setSelectedValue = $($(tabViewId + '[id$="nokAddressReason_input"]').find('option')[data.nokReason]).val();        
         $(tabViewId + '[id$="nokAddressReason_input"]').val(setSelectedValue).trigger('change');
     });
 }
