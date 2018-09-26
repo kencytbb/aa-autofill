@@ -8,14 +8,17 @@
 // @match        http://localhost:8081/ivy/*
 // @match        http://dev2-desk.axonivy.io/ivy/*
 // @match        https://desk.finform.ch/ivy/*
-// @require             https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js
-// @require             https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.0/underscore-min.js
-// @require             https://cdnjs.cloudflare.com/ajax/libs/chance/1.0.16/chance.min.js
-// @require             https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js
+
+// @resource     ballon https://cdnjs.cloudflare.com/ajax/libs/balloon-css/0.5.0/balloon.min.css 
+// @require      https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.0/underscore-min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/chance/1.0.16/chance.min.js
+// @require      https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js
 // @grant               GM_listValues
 // @grant               GM_registerMenuCommand
 // @grant               GM_log
 // @grant               GM_addStyle
+// @grant               GM_getResourceText
 // ==/UserScript==
 
 var CONST = {
@@ -41,16 +44,20 @@ var CONST = {
     buttons: [{
         active: true,
         id: 'accountHolder',
-        text: 'AH',
+        text: '',
         event: onAccountHolderFillData,
-        business: 'cob'
+        business: 'cob',
+        icon: 'fa fa-user-circle-o',
+        tooltip: 'Fill Account Holder Data'
     },
     {
         active: true,
         id: 'product',
-        text: 'Product',
+        text: '',
         event: onProductFillData,
-        business: 'cob'
+        business: 'cob',
+        icon: 'fa fa-th-large',
+        tooltip:'Fill Product Data'
     }
 ]
 };
@@ -102,10 +109,12 @@ var COB_DATA = {
 const templates = {
     buttons: {
         normal: {
-            data: { id: '', text: '' },
+            data: { id: '', text: '', icon:'', tooltip:'' },
             get html() {
                 return `
-                <button class="btn-fill btn btn-primary" id="${this.data.id}">
+                <button class="btn-fill btn btn-primary" 
+                data-balloon="${this.data.tooltip}" data-balloon-pos="right" id="${this.data.id}">
+                    <span  class="${this.data.icon}"></span>
                     <span class="btn-text">${this.data.text}</span>
                 </button>
                 `;
@@ -116,7 +125,9 @@ const templates = {
         data: { display: '', icon: '' },
         get html() {
             return `
-            <div id="panel-wrapper" class="panel-wrapper panel ${this.data.display}">                                
+            <div id="panel-wrapper-slide">
+            <div id="panel-wrapper" class="panel-wrapper panel ${this.data.display}">  
+            </div>                              
             </div>
             `;
         }
@@ -125,54 +136,34 @@ const templates = {
 
 (function () {
     createPanel();
-    createButtons();   
+    createButtons();  
 })();
 
-
-
-
+GM_addStyle(GM_getResourceText('ballon'));
 GM_addStyle(`
 .btn-fill {
-	-moz-box-shadow:inset 0px -3px 7px 0px #29bbff;
-	-webkit-box-shadow:inset 0px -3px 7px 0px #29bbff;
-	box-shadow:inset 0px -3px 7px 0px #29bbff;
-	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #2dabf9), color-stop(1, #0688fa));
-	background:-moz-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
-	background:-webkit-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
-	background:-o-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
-	background:-ms-linear-gradient(top, #2dabf9 5%, #0688fa 100%);
-	background:linear-gradient(to bottom, #2dabf9 5%, #0688fa 100%);
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#2dabf9', endColorstr='#0688fa',GradientType=0);
-	background-color:#2dabf9;
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
-	border-radius:3px;
-	border:1px solid #0b0e07;
-	display:inline-block;
-	cursor:pointer;
-	color:#ffffff;
-	font-family:Arial;
-	font-size:15px;
-	padding:9px 23px;
-	text-decoration:none;
-    text-shadow:0px 1px 0px #263666;
-    width:150px;    
-}
-.btn-fill:hover {
-	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #0688fa), color-stop(1, #2dabf9));
-	background:-moz-linear-gradient(top, #0688fa 5%, #2dabf9 100%);
-	background:-webkit-linear-gradient(top, #0688fa 5%, #2dabf9 100%);
-	background:-o-linear-gradient(top, #0688fa 5%, #2dabf9 100%);
-	background:-ms-linear-gradient(top, #0688fa 5%, #2dabf9 100%);
-	background:linear-gradient(to bottom, #0688fa 5%, #2dabf9 100%);
-	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#0688fa', endColorstr='#2dabf9',GradientType=0);
-	background-color:#0688fa;
-}
-.btn-fill:active {
-	position:relative;
-	top:1px;
-}
+    text-align: center;
+    vertical-align: middle;
+    text-decoration: none;
+    margin: 15px 13px;
+    border-radius: 50%;
+    width: 30px ;
+    height: 30px;
+    font-size: 15px;
+    background: #F0F0F0;
+    color: #282828;
+    margin-left:auto;
+    margin-right:auto;
+    display:block;
+  }
+  
 
+  
+.btn-fill:hover {
+    background: #A8CB17;
+    cursor:pointer;
+  }
+ 
 .panel-wrapper {
     padding: 0px;
     font-weight: 500;
@@ -181,11 +172,8 @@ GM_addStyle(`
     box-shadow: -1px 0px 11px -1px rgba(0,0,0,0.75);
 }
 .panel {
-    right: -650px;
     bottom: 0px;
-    overflow: hidden;
-    position: fixed;
-    width: 150px;
+    position: fixed;    
     opacity: 1;
     z-index: 1050;
     -webkit-transition: all .6s ease;
@@ -193,11 +181,30 @@ GM_addStyle(`
     -o-transition: all .6s ease;
     -ms-transition: all .6s ease;
     transition: all .6s ease;
+    width:60px;
+    background:#F4F5F7;
 }
 .panel.out {
-    right: 0px;
-    bottom: 10px;
+    left: 0px;
+    bottom:50%;
 }
+#panel-wrapper-slide .panel-wrapper{
+    position: fixed;
+    left: -80px;
+    transition: 0.3s;
+    padding: 15px;
+    width: 100px;
+    text-decoration: none;
+    font-size: 20px;
+    color: white;
+    border-radius: 0 5px 5px 0;
+    background-color: #E1E1E1;
+}
+
+#panel-wrapper-slide .panel-wrapper:hover {
+    left: 0;
+}
+
 `);
 
 
@@ -295,7 +302,7 @@ function fullFillSigningRightData(){
 }
 
 function blockPage() {
-    $.blockUI({ message: '<span class="fa-3x"><i class="fa fa-spinner fa-spin"/></span>'});
+    $.blockuI({ message: '<span class="fa-3x"><i class="fa fa-spinner fa-spin"/></span>'});
 }
 
 function unblockPage () {
