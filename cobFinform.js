@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Finform COB
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  try to take over the world!
 // @author       ntai
 // @match        https://test1-desk.finform.ch/*
@@ -9,7 +9,7 @@
 // @match        http://dev2-desk.axonivy.io/ivy/*
 // @match        https://desk.finform.ch/ivy/*
 
-// @resource     ballon https://cdnjs.cloudflare.com/ajax/libs/balloon-css/0.5.0/balloon.min.css 
+// @resource     ballon https://cdnjs.cloudflare.com/ajax/libs/balloon-css/0.5.0/balloon.min.css
 // @require      https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.0/underscore-min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/chance/1.0.16/chance.min.js
@@ -20,10 +20,14 @@
 // @grant               GM_addStyle
 // @grant               GM_getResourceText
 // ==/UserScript==
-
+/*
+1.1:
+   - Implement left panel and slide.
+   - Change text to icon and add tooltips to icon
+*/
 var CONST = {
     envs: {
-        local:  [ 
+        local:  [
             /^http.?:\/\/localhost:\d{4}\/ivy.*$/gm
         ],
         test: [
@@ -64,7 +68,7 @@ var CONST = {
 var COB_DATA = {
     accountHolder1: {
         personalData: {
-            customSalutation: '1',            
+            customSalutation: '1',
             titleForSelectMenu: '1',
             nationality: 'CH',
             homeTown: 'Lucens',
@@ -112,7 +116,7 @@ const templates = {
             data: { id: '', text: '', icon:'', tooltip:'' },
             get html() {
                 return `
-                <button class="btn-fill btn btn-primary" 
+                <button class="btn-fill btn btn-primary"
                 data-balloon="${this.data.tooltip}" data-balloon-pos="right" id="${this.data.id}">
                     <span  class="${this.data.icon}"></span>
                     <span class="btn-text">${this.data.text}</span>
@@ -126,8 +130,8 @@ const templates = {
         get html() {
             return `
             <div id="panel-wrapper-slide">
-            <div id="panel-wrapper" class="panel-wrapper panel ${this.data.display}">  
-            </div>                              
+            <div id="panel-wrapper" class="panel-wrapper panel ${this.data.display}">
+            </div>
             </div>
             `;
         }
@@ -136,7 +140,7 @@ const templates = {
 
 (function () {
     createPanel();
-    createButtons();  
+    createButtons();
 })();
 
 GM_addStyle(GM_getResourceText('ballon'));
@@ -156,14 +160,14 @@ GM_addStyle(`
     margin-right:auto;
     display:block;
   }
-  
 
-  
+
+
 .btn-fill:hover {
     background: #A8CB17;
     cursor:pointer;
   }
- 
+
 .panel-wrapper {
     padding: 0px;
     font-weight: 500;
@@ -173,7 +177,7 @@ GM_addStyle(`
 }
 .panel {
     bottom: 0px;
-    position: fixed;    
+    position: fixed;
     opacity: 1;
     z-index: 1050;
     -webkit-transition: all .6s ease;
@@ -208,7 +212,7 @@ GM_addStyle(`
 `);
 
 
-function _detect(patterns, selector, action) {        
+function _detect(patterns, selector, action) {
     let detects = [];
     _.each(patterns, (pattern) => {
         if (selector(pattern)) {
@@ -231,27 +235,27 @@ function _check(patterns) {
     return _.isEmpty(detected) ? '' : detected[0];
 }
 
-function _app() {    
+function _app() {
     return {
-        env: _check(CONST.envs),        
-        business:  _check(CONST.businesses),  
+        env: _check(CONST.envs),
+        business:  _check(CONST.businesses),
     };
 }
 
-//******************************************************** 
+//********************************************************
 //                 Init Panel And Button
 //********************************************************
-function createButtons() {    
-    let renderedButtons = _.filter(CONST.buttons, {business:'cob'});    
-    _.map(renderedButtons, (button, index, buttons) => {          
+function createButtons() {
+    let renderedButtons = _.filter(CONST.buttons, {business:'cob'});
+    _.map(renderedButtons, (button, index, buttons) => {
         if (button.active == false) {return};
         createButton(button);
     });
 }
 
-function createButton(button) {        
-    let template = templates.buttons[button.template || 'normal'];        
-    template.data = button;    
+function createButton(button) {
+    let template = templates.buttons[button.template || 'normal'];
+    template.data = button;
     $('.panel').append(template.html);
     $("#" + button.id).click(button.event);
 }
@@ -281,7 +285,7 @@ function onProductFillData(e){
 
 
 
-function fullFillAcountholderTab(){    
+function fullFillAcountholderTab(){
     var accountHolder = COB_DATA.accountHolder1;
     _fillQuestionnaire(accountHolder);
     _fullfillPersonInformationSubTab(accountHolder);
@@ -333,7 +337,7 @@ function _fullfillPersonInformationSubTab(accountHolder) {
     $(tabViewId + '[id$="accountHolderIdentification:dateOfExpiry_input"]').val(data.dateOfExp).trigger('change');
 
     _checkElement('[id$="nokAddressReason_input"]').then((element) => {
-        var setSelectedValue = $($(tabViewId + '[id$="nokAddressReason_input"]').find('option')[data.nokReason]).val();        
+        var setSelectedValue = $($(tabViewId + '[id$="nokAddressReason_input"]').find('option')[data.nokReason]).val();
         $(tabViewId + '[id$="nokAddressReason_input"]').val(setSelectedValue).trigger('change');
     });
 }
