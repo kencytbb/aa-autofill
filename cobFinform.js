@@ -25,6 +25,11 @@
    - Implement left panel and slide.
    - Change text to icon and add tooltips to icon
 */
+
+
+/*****************************************************
+ *               Setting - Init data
+ *****************************************************/
 var CONST = {
     envs: {
         local:  [
@@ -143,6 +148,9 @@ const templates = {
     createButtons();
 })();
 
+/*****************************************************
+ *                     Style
+ *****************************************************/
 GM_addStyle(GM_getResourceText('ballon'));
 GM_addStyle(`
 .btn-fill {
@@ -211,6 +219,10 @@ GM_addStyle(`
 
 `);
 
+
+/*****************************************************
+ *               Support Functions
+ *****************************************************/
 
 function _detect(patterns, selector, action) {
     let detects = [];
@@ -312,6 +324,10 @@ function blockPage() {
 function unblockPage () {
     $.unblockUI();
 }
+
+/*****************************************************
+ *                Fill data Section
+ *****************************************************/
 
 function _fullfillPersonInformationSubTab(accountHolder) {
     let tabViewId = CONST.tabs.accountHolder;
