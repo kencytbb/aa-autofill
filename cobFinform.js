@@ -9,11 +9,12 @@
 // @match        http://dev2-desk.axonivy.io/ivy/*
 // @match        https://desk.finform.ch/ivy/*
 
-// @resource     ballon https://cdnjs.cloudflare.com/ajax/libs/balloon-css/0.5.0/balloon.min.css
+
 // @require      https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.0/underscore-min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/chance/1.0.16/chance.min.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.10/lodash.min.js
+// @resource     ballon https://cdnjs.cloudflare.com/ajax/libs/balloon-css/0.5.0/balloon.min.css
 // @grant               GM_listValues
 // @grant               GM_registerMenuCommand
 // @grant               GM_log
@@ -43,7 +44,9 @@ var CONST = {
     tabs: {
         accountHolder: '[id*="accountHolderTabView"]',
         product: '[id*="productTabView"]',
-        signingRight: '[id*="signingRightTabView"]'
+        signingRight: '[id*="signingRightTabView"]',
+        poa: '[id*="powerOfAttorneyTabView"]'
+
     },
     businesses: {
         cob: [
@@ -67,6 +70,15 @@ var CONST = {
         business: 'cob',
         icon: 'fa fa-th-large',
         tooltip:'Fill Product Data'
+    },
+    {
+        active: true,
+        id: 'poa',
+        text: '',
+        event: onPoaFillData,
+        business: 'cob',
+        icon: 'fa fa-file-text-o',
+        tooltip:'Fill Power of Attorney Data'
     }
 ]
 };
@@ -112,6 +124,16 @@ var COB_DATA = {
     signingRight:{
         regularType: 'checked',
         authorisationType: 'checked'
+    },
+    poa:{
+        poaData: {
+            validUntil: '10.10.2050',
+            customSalutation: '1',
+            dob: '12.12.1991',  
+            relationType: '1'  ,
+            zip: '8001',
+            city :'Zürich'        
+        }
     }
 };
 
@@ -295,6 +317,22 @@ function onProductFillData(e){
     fullfillProductTab();
 }
 
+function onPoaFillData(e){
+    event.preventDefault();        
+    if (_getPowerOfAttorneys() == 0) {
+        $('[id$="createPoaLink"]').trigger('click');        
+        _checkElement('[id$="validTo_input"]').then((element) => {
+            blockPage();
+            fullfillPOATab();  
+        });
+    };      
+    _checkElement('[id$="validTo_input"]').then((element) => {
+        blockPage();
+        fullfillPOATab();  
+    });
+   
+}
+
 
 
 function fullFillAcountholderTab(){
@@ -308,6 +346,11 @@ function fullfillProductTab(){
     _fillProductData(product);
 }
 
+function fullfillPOATab(){
+    var poa = COB_DATA.poa;
+    _fillPOAData(poa);
+}
+
 
 function fullFillSigningRightData(){
     let tabViewId = CONST.tabs.signingRight;
@@ -318,7 +361,7 @@ function fullFillSigningRightData(){
 }
 
 function blockPage() {
-    $.blockuI({ message: '<span class="fa-3x"><i class="fa fa-spinner fa-spin"/></span>'});
+    $.blockUI({ message: '<span class="fa-3x"><i class="fa fa-spinner fa-spin"/></span>'});
 }
 
 function unblockPage () {
@@ -398,6 +441,30 @@ function _fillProductData(product){
 }
 
 
+
+function _fillPOAData(poa){
+    let tabViewId = CONST.tabs.poa;
+    let data = poa.poaData;
+    $(tabViewId + '[id$="validTo_input"]').val(data.validUntil).trigger('change');
+    $(tabViewId + '[id$="personSalutation_input"]').val($($(tabViewId + '[id$="personSalutation_input"]').find('option')[data.customSalutation]).val()).trigger('change')
+    $(tabViewId + '[id$="personFirstName"]').val(chance.first()).trigger('change');
+    $(tabViewId + '[id$="personLastName"]').val(chance.last()).trigger('change');
+    $(tabViewId + '[id$="personBirthDate_input"]').val(data.dob).trigger('change');
+    $(tabViewId + '[id$="addressStreet"]').val(chance.street({ country: 'us' })).trigger('change');
+    $(tabViewId + '[id$="addressHouseNo"]').val(chance.zip()).trigger('change');
+    $(tabViewId + '[id$="addressZipCode"]').val(data.zip).trigger('change');
+    $(tabViewId + '[id$="addressCity"]').val(data.city).trigger('change');
+    
+    _checkElement('[id$="relationWithAh_input"]').then((element) => {
+        var setSelectedValue = $($(tabViewId + '[id$="relationWithAh_input"]').find('option')[data.relationType]).val();
+        $(tabViewId + '[id$="relationWithAh_input"]').val(setSelectedValue).trigger('change');
+        if($(tabViewId + '[id$="relationWithAh_input"]').val() === setSelectedValue ){
+            unblockPage();
+        }
+    });
+    
+}
+
 function _waiter() {
     return new Promise(resolve => {
         requestAnimationFrame(resolve);
@@ -409,4 +476,9 @@ async function _checkElement(selector) {
         await _waiter();
     }
     return true;
+}
+
+
+function _getPowerOfAttorneys() {
+    return $('[id$="selectPowerOfAttorney_guiFrmInsideUIRepeat"]').length;
 }
